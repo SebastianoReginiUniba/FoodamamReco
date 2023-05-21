@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html>
 
@@ -9,14 +11,13 @@
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css"
 		integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
 
-
 	<style>
 		body,
 		html {
 			margin: 0;
 			padding: 0;
 			height: 100%;
-			background: #7abecc !important;
+			background: #dddddd !important;
 		}
 
 		.user_card {
@@ -116,9 +117,10 @@
 						</div>
 						<div class="input-group mb-2">
 							<div class="input-group-append">
-								<span class="input-group-text"><i class="fas">Allergie</i></span>
+								<span class="input-group-text"><i class="fas">Allergie & Intolleranze</i></span>
 							</div>
 						</div>
+						<!--[ ] mettere icone a allergie e diete -->
 						<table>
 							<tr>
 								{% for allergy in form.allergies %}
@@ -130,7 +132,6 @@
 								{% endfor %}
 							</tr>
 						</table>
-
 						<div class="input-group mb-2">
 							<div class="input-group-append">
 								<span class="input-group-text"><i class="fas">Diete</i></span>
@@ -181,5 +182,14 @@
 		}
 	</script>
 </body>
+
+<script>
+	document.querySelectorAll('img').forEach(img => {
+		img.addEventListener('click', e => {
+			const checkbox = e.target.nextElementSibling;
+			checkbox.checked = !checkbox.checked;
+		});
+	});
+</script>
 
 </html>

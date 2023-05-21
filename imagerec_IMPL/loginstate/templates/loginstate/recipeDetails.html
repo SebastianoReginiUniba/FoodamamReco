@@ -1,0 +1,75 @@
+{% extends 'loginstate/main.html' %}
+
+{% block content %}
+
+<style>
+    .title {
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #212529;
+        color: white;
+    }
+
+    .image {
+        border: 8px solid #212529;
+        object-fit: contain;
+        background-color: #212529;
+    }
+
+    .healt-label {
+        border: none;
+        border-radius: 10px;
+        padding: 0 0.5rem 0.1rem 0.5rem;
+        margin: 0.1rem;
+        background-color: #0dcaf0;
+    }
+
+    .ingredients {
+        width: 100%;
+    }
+
+    .ingredients td {
+        border: 2px solid #212529;
+    }
+</style>
+
+<div class="title" style="margin: 0.5rem 0 2rem 0;">
+    <h1>{{ this_recipe.label }}</h1>
+</div>
+<div>
+    <div style="display:flex">
+        <div>
+            <img class="image" src="{{ this_recipe.image }}">
+        </div>
+        <div style="margin: 0 0 0 1rem; width: 100%;">
+            <h1> [Macro goes here] to continue...</h1>
+        </div>
+        <div style="margin: 0 0 0 1rem; width: 40%;">
+            <h4>Health Lables</h4>
+            <div>
+                {% for healthLabel in this_recipe.healthLabels %}
+                <button class="healt-label">{{ healthLabel }}</button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div>
+        <h4 class="title" style="margin: 0.5rem 0 .5rem 0;">Ingredients</h4>
+        <table class="ingredients">
+            {% for ingredient in this_recipe.ingredients %}
+            <tr>
+                <td>{{ ingredient.food }}</td>
+                <td>{{ ingredient.quantity }} {{ ingredient.measure }}</td>
+                <td>{{ ingredient.foodCategory }}</td>
+                <td>{{ ingredient.text }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}
+<!-- [ ] Terminare la pagina -->

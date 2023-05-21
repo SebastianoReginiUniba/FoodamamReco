@@ -2,94 +2,138 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from .forms import *
 
 # API
 from py_edamam import Edamam
 import json
-
-from .forms import *
+import urllib.parse
+from urllib.parse import quote
+''''''
+API_ID = 'd0eeda40'
+API_KEY = '30d3b1b95a3b059152766628369771f7'
 
 # Neural network model
 import tensorflow as tf
+from tensorflow.keras.models import load_model
 from PIL import Image
 import numpy as np
-
-# Chatbot
-#from django.http import JsonResponse
-#from .food_chatbot import chatbot
-
-
-from tensorflow.keras.models import load_model
-
+''''''
 MODEL_PATH = "food_classifier.h5"
 model = load_model(MODEL_PATH, compile=False)
+input_dimension = 224
+
+# Recipe infos
+import requests
+from django.http import JsonResponse
+
+# Chatbot
+'''
+from django.http import JsonResponse
+from .food_chatbot import chatbot
+'''
+
+def registerPage(request):
+    form = CreateUserForm()
+    form.allergy_images = CustomUser.allergy_images
+    if request.method == 'POST':
+        form = CreateUserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            user = form.cleaned_data.get('username')
+            messages.success(request, 'Account was created for ' + user)
+            return redirect('login')
+
+    context = {'form': form}
+    return render(request, 'register.html', context)
 
 def predict(image_path):
+    with open('classes.txt', 'r') as f:
+        classes = [line.strip() for line in f.readlines()]
     preprocessed_image = preprocess_image(image_path)
     prediction = model.predict(preprocessed_image)
-    # Process the prediction to get the recognized class
-
+    prediction = np.argmax(prediction)
+    recognized_class = classes[prediction]
+    recognized_class = recognized_class.replace('_', ' ')
     return recognized_class
 
-input_dimension = 224
 def preprocess_image(image_file):
     img = Image.open(image_file)
-    img = img.resize((input_dimension, input_dimension))  # Replace input_width and input_height with your model's input dimensions
-    img_array = np.array(img) / 255.0  # Normalize pixel values
-    img_array = np.expand_dims(img_array, axis=0)  # Add a batch dimension
+    img = img.resize((input_dimension, input_dimension))
+    img_array = np.array(img) / 255.0
+    img_array = np.expand_dims(img_array, axis=0)
     return img_array
 
-def show_recipe_options(request, resultRecipe):
-    recipeInput = resultRecipe
+@login_required(login_url='login')
+def recipeDetails(request):
+    uri = request.GET.get('uri')
+    label = request.GET.get('label')
 
-    e = Edamam(recipes_appid='d0eeda40',
-            recipes_appkey='30d3b1b95a3b059152766628369771f7')
-
-    a = e.search_recipe(recipeInput)
-    hits = a["hits"]
+    e = Edamam(recipes_appid=API_ID,recipes_appkey=API_KEY)
     
-    print(recipeInput)
-    print(hits)
+    recipe_data = e.search_recipe(label)['hits']
+    for hit in recipe_data:
+        recipe = hit['recipe']
+        if recipe['uri'] == uri and recipe['label'] == label:
+            this_recipe = recipe
+            break
 
-    if request.method == 'POST' and 'hit_choice' in request.POST:
-        count = int(request.POST['hit_choice'])
-        print("\n\n")
-        print('Grassi: ' + str(a['hits'][count]['recipe']['digest'][0]['total']) + " " + str(a['hits'][count]['recipe']['digest'][0]['unit']))
-        print('Carboidrati: ' + str(a['hits'][count]['recipe']['digest'][1]['total']) + " " + str(a['hits'][count]['recipe']['digest'][1]['unit']))
-        print('Proteine: ' + str(a['hits'][count]['recipe']['digest'][2]['total']) + " " + str(a['hits'][count]['recipe']['digest'][2]['unit']))
-    return hits
-
-
-# Create your views here.
+    context = {'this_recipe': this_recipe}
+    return render(request, 'loginstate/recipeDetails.html', context)
 
 @login_required(login_url='login')
 def home(request):
     form = ImageForm(request.POST)
     img = ImageUpload.objects.last()
     resultRecipe = ""
-    with open('classes.txt', 'r') as f:
-        classes = [line.strip() for line in f.readlines()]
+    hits = []
+    recognized_class = ""
 
+    # Check for forms that send "POST"
     if request.method == 'POST':
         form = ImageForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             img = ImageUpload.objects.last()
-            preprocessed_image = preprocess_image(img.picture.path)
-            prediction = np.argmax(model.predict(preprocessed_image))
-            resultRecipe = classes[prediction]
-            resultRecipe = resultRecipe.replace('_', ' ')
+            if img.picture:
+                recognized_class = predict(img.picture.path)
 
-            show_recipe_options(request, resultRecipe)
+                # Update the image object with the recognized recipe label
+                img.recipe_label = recognized_class
+                img.save()
+
+                # Get recipe hits based on the recognized class
+                e = Edamam(recipes_appid=API_ID,
+                           recipes_appkey=API_KEY)
+                response = e.search_recipe(recognized_class)
+                hits = []
+                """
+                uri = 'http://www.edamam.com/ontologies/edamam.owl#recipe_2d6cf6fe345ebc5b1805995863138d98'
+                encoded_uri = urllib.parse.quote(uri)
+                print(encoded_uri)
+                breakpoint()
+                """
+                hits = [{'recipe': {'uri': urllib.parse.quote(result['recipe']['uri']),
+                    'label': result['recipe']['label'],
+                    'image': result['recipe']['image']}} for result in response['hits']]
+
+
+                print(response['hits'][0])
+                print(hits[0])
+        hit_choice = request.POST.get('hit_choice')
+        if hit_choice is not None and len(hits)>0:
+            recipe_id = hits[int(hit_choice)]['recipe']['uri'].split('_')[-1]
+            recipe_info = get_recipe_info(request, recipe_id)
+            context = {'img': img, 'form': form, 'recognized_class': recognized_class, 'hits': hits, 'recipe_info': recipe_info}
+            return render(request, 'loginstate/home.html', context)
+        
         else:
             form = ImageForm()
 
+        # Get the latest uploaded image object
         img = ImageUpload.objects.last()
 
-		# ----
-
-        
-    context = {'img': img, 'form': form}#, 'hits': hits}, 'recognized_class': recognized_class}
+    context = {'img': img, 'form': form, 'recognized_class': recognized_class, 'hits': hits}
     return render(request, 'loginstate/home.html', context)
 
 @login_required(login_url='login')
