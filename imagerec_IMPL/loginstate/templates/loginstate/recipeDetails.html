@@ -18,12 +18,12 @@
         background-color: #212529;
     }
 
-    .healt-label {
+    .health-label {
         border: none;
         border-radius: 10px;
         padding: 0 0.5rem 0.1rem 0.5rem;
         margin: 0.1rem;
-        background-color: #0dcaf0;
+        background-color: #aef1a9;
     }
 
     .ingredients {
@@ -34,7 +34,11 @@
         border: 2px solid #212529;
     }
 </style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#chatbot-dialog">
+    Chatbot (in progress)
+</button>
 <div class="title" style="margin: 0.5rem 0 2rem 0;">
     <h1>{{ this_recipe.label }}</h1>
 </div>
@@ -44,24 +48,36 @@
             <img class="image" src="{{ this_recipe.image }}">
         </div>
         <div style="margin: 0 0 0 1rem; width: 100%;">
-            <h1> [Macro goes here] to continue...</h1>
+            <h4>{{ this_recipe.digest.2.label }}: {{ this_recipe.digest.2.total|floatformat:2 }} {{this_recipe.digest.2.unit }}</h4>
+            <h4>{{ this_recipe.digest.1.label }}: {{ this_recipe.digest.1.total|floatformat:2 }} {{this_recipe.digest.1.unit }}</h4>
+            <h4>{{ this_recipe.digest.0.label }}: {{ this_recipe.digest.0.total|floatformat:2 }} {{this_recipe.digest.0.unit }}</h4>
         </div>
         <div style="margin: 0 0 0 1rem; width: 40%;">
             <h4>Health Lables</h4>
-            <div>
-                {% for healthLabel in this_recipe.healthLabels %}
-                <button class="healt-label">{{ healthLabel }}</button>
-                {% endfor %}
-            </div>
+            {% for healthLabel in this_recipe.healthLabels %}
+            {% if healthLabel|upper in user_characteristics|upper %}
+            <button class="health-label" style="background-color: #79aff9">{{ healthLabel }}</button>
+            {% else %}
+            <button class="health-label">{{ healthLabel }}</button>
+            {% endif %}
+            {% endfor %}
         </div>
     </div>
     <div>
         <h4 class="title" style="margin: 0.5rem 0 .5rem 0;">Ingredients</h4>
         <table class="ingredients">
+            <thead>
+                <tr>
+                    <th>Food type</th>
+                    <th>Quantity</th>
+                    <th>Category</th>
+                    <th>Extended description</th>
+                </tr>
+            </thead>
             {% for ingredient in this_recipe.ingredients %}
             <tr>
                 <td>{{ ingredient.food }}</td>
-                <td>{{ ingredient.quantity }} {{ ingredient.measure }}</td>
+                <td>{{ ingredient.quantity }} {% if ingredient.measure and ingredient.measure != "None" and ingredient.measure != "<unit>" %}{{ ingredient.measure }}{% endif %}</td>
                 <td>{{ ingredient.foodCategory }}</td>
                 <td>{{ ingredient.text }}</td>
             </tr>
@@ -71,5 +87,25 @@
 
 </div>
 
+<script>!(function () {
+    let e = document.createElement("script"),
+      t = document.head || document.getElementsByTagName("head")[0];
+    (e.src =
+      "https://cdn.jsdelivr.net/npm/rasa-webchat@1.x.x/lib/index.js"),
+      // Replace 1.x.x with the version that you want
+      (e.async = !0),
+      (e.onload = () => {
+        window.WebChat.default(
+          {
+            customData: { language: "en" },
+            socketUrl: "http://localhost:5055",
+            // add other props here
+          },
+          null
+        );
+      }),
+      t.insertBefore(e, t.firstChild);
+  })();
+  </script>
+
 {% endblock %}
-<!-- [ ] Terminare la pagina -->

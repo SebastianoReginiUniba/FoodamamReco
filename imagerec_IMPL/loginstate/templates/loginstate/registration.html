@@ -60,8 +60,12 @@
 			padding: 0 2rem;
 		}
 
+		.input-group {
+			justify-content: space-around;
+		}
+
 		.input-group-text {
-			background: #f7ba5b !important;
+			background: #212529 !important;
 			color: white !important;
 			border: 0 !important;
 			border-radius: 0.25rem 0 0 0.25rem !important;
@@ -71,6 +75,30 @@
 		.input_pass:focus {
 			box-shadow: none !important;
 			outline: 0px !important;
+		}
+
+		.elems {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			align-items: center;
+			width: 100%;
+			text-align: center;
+			color: white;
+			font-weight: 500;
+		}
+
+		.elems label:hover {
+			border: .1rem solid #212529;
+		}
+
+		.elems label {
+			width: 49%;
+			border: .1rem solid transparent;
+		}
+
+		.elems input[type="checkbox"] {
+			display: none;
 		}
 	</style>
 
@@ -86,7 +114,6 @@
 					<h3 id="form-title">REGISTRAZIONE</h3>
 				</div>
 				<div class="d-flex justify-content-center form_container">
-
 					<form method="POST" action="">
 						{% csrf_token %}
 						<div class="credentials">
@@ -117,38 +144,24 @@
 						</div>
 						<div class="input-group mb-2">
 							<div class="input-group-append">
-								<span class="input-group-text"><i class="fas">Allergie & Intolleranze</i></span>
+								<span class="input-group-text"><i class="fas">Allergies & Intollerances</i></span>
 							</div>
 						</div>
-						<!--[ ] mettere icone a allergie e diete -->
-						<table>
-							<tr>
-								{% for allergy in form.allergies %}
-								<td>{{ allergy }}</td>
-								{% if forloop.counter|divisibleby:4 and not forloop.last %}
-							</tr>
-							<tr>
-								{% endif %}
-								{% endfor %}
-							</tr>
-						</table>
+						<div class="elems">
+							{% for allergy in form.allergies %}
+							{{ allergy }}
+							{% endfor %}
+						</div>
 						<div class="input-group mb-2">
 							<div class="input-group-append">
-								<span class="input-group-text"><i class="fas">Diete</i></span>
+								<span class="input-group-text"><i class="fas">Diets</i></span>
 							</div>
 						</div>
-						<table>
-							<tr>
-								{% for diet in form.diets %}
-								<td>{{ diet }}</td>
-								{% if forloop.counter|divisibleby:2 and not forloop.last %}
-							</tr>
-							<tr>
-								{% endif %}
-								{% endfor %}
-							</tr>
-						</table>
-
+						<div class="elems">
+							{% for diet in form.diets %}
+							{{ diet }}
+							{% endfor %}
+						</div>
 						<div class="d-flex justify-content-center mt-3 login_container">
 							<input class="btn login_btn" type="submit" value="Registra Account">
 						</div>
@@ -190,6 +203,23 @@
 			checkbox.checked = !checkbox.checked;
 		});
 	});
+
+	document.addEventListener('DOMContentLoaded', function () {
+		var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+		for (var i = 0; i < checkboxes.length; i++) {
+			checkboxes[i].addEventListener('change', function () {
+				var checkboxLabel = document.querySelector('label[for="' + this.id + '"]');
+				if (checkboxLabel) {
+					if (this.checked) {
+						checkboxLabel.style.backgroundColor = '#21252999';
+					} else {
+						checkboxLabel.style.backgroundColor = '';
+					}
+				}
+			});
+		}
+	});
+
 </script>
 
 </html>

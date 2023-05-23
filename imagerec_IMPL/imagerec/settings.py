@@ -26,7 +26,9 @@ SECRET_KEY = 'django-insecure-o@t0e2c+84j+=0)egielyukc-3v97@^hbphle04cgh%cbth43j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS=['*']
+CORS_ORIGIN_ALLOW_ALL = True
+
 
 
 # Application definition
@@ -38,9 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    
     'loginstate',
     'multiselectfield',
+    'corsheaders',
 ]
 
 AUTH_USER_MODEL = 'loginstate.CustomUser'
@@ -53,6 +56,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'imagerec.urls'

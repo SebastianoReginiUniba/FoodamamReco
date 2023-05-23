@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import *
+from .models import ALLERGIES_DICT, DIETS_DICT
 
 # API
 from py_edamam import Edamam
@@ -66,9 +67,19 @@ def preprocess_image(image_file):
 
 @login_required(login_url='login')
 def recipeDetails(request):
+    user_characteristics = []
+    user = request.user
     uri = request.GET.get('uri')
     label = request.GET.get('label')
 
+    for allergy in user.allergies:
+        user_characteristics.append(ALLERGIES_DICT[allergy])
+        user_characteristics.append(ALLERGIES_DICT[allergy]+"-Free")
+    for diets in user.diets:
+        user_characteristics.append(DIETS_DICT[diets])
+        user_characteristics.append(DIETS_DICT[diets]+"-Free")
+        
+    
     e = Edamam(recipes_appid=API_ID,recipes_appkey=API_KEY)
     
     recipe_data = e.search_recipe(label)['hits']
@@ -78,7 +89,7 @@ def recipeDetails(request):
             this_recipe = recipe
             break
 
-    context = {'this_recipe': this_recipe}
+    context = {'this_recipe': this_recipe, 'user_characteristics':user_characteristics}
     return render(request, 'loginstate/recipeDetails.html', context)
 
 @login_required(login_url='login')
@@ -107,19 +118,10 @@ def home(request):
                            recipes_appkey=API_KEY)
                 response = e.search_recipe(recognized_class)
                 hits = []
-                """
-                uri = 'http://www.edamam.com/ontologies/edamam.owl#recipe_2d6cf6fe345ebc5b1805995863138d98'
-                encoded_uri = urllib.parse.quote(uri)
-                print(encoded_uri)
-                breakpoint()
-                """
                 hits = [{'recipe': {'uri': urllib.parse.quote(result['recipe']['uri']),
                     'label': result['recipe']['label'],
                     'image': result['recipe']['image']}} for result in response['hits']]
 
-
-                print(response['hits'][0])
-                print(hits[0])
         hit_choice = request.POST.get('hit_choice')
         if hit_choice is not None and len(hits)>0:
             recipe_id = hits[int(hit_choice)]['recipe']['uri'].split('_')[-1]
@@ -138,14 +140,7 @@ def home(request):
 
 @login_required(login_url='login')
 def chatbot(request):
-	'''
-	user_input = request.GET.get('msg')
-	response = chatbot.get_response(user_input)
-	print(JsonResponse({'response': str(response)}))
-	#context = {'form': form}
-	'''
-
-	return render(request, 'loginstate/chatbot.html')#, context)
+    return render(request, 'chatbot.html')
 
 # -----------------------------------------------------------------------
 
