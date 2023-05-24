@@ -28,12 +28,6 @@ input_dimension = 224
 import requests
 from django.http import JsonResponse
 
-# Chatbot
-'''
-from django.http import JsonResponse
-from .food_chatbot import chatbot
-'''
-
 def registerPage(request):
     form = CreateUserForm()
     form.allergy_images = CustomUser.allergy_images

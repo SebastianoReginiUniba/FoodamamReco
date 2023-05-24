@@ -1,9 +1,9 @@
 from django.urls import path
 from . import views
 # [ ] Modificare il chatbot per farlo funzionare nel modo richiesto
-# [ ] Trovare cibi che vengono riconosciuti bene
-# [ ] Preparare struttura capitoli per tesi di laurea da presentare alla prof
 # [ ] (Optional) Riaddestrare il modello e caricarlo sulla webapp 
+# [x] Trovare cibi che vengono riconosciuti bene
+# [x] Preparare struttura capitoli per tesi di laurea da presentare alla prof
 # [x] Modificare colore health labels in base a caratteristiche utente
 # [x] Sistemare il checked in registrazione
 # [x] Sistemare i nomi delle card (ora invisibili, vorrei fare un display flex che li metta agli opposti in verticale)

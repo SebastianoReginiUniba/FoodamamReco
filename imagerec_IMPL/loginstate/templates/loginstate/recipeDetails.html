@@ -34,11 +34,7 @@
         border: 2px solid #212529;
     }
 </style>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#chatbot-dialog">
-    Chatbot (in progress)
-</button>
 <div class="title" style="margin: 0.5rem 0 2rem 0;">
     <h1>{{ this_recipe.label }}</h1>
 </div>
@@ -87,25 +83,29 @@
 
 </div>
 
-<script>!(function () {
-    let e = document.createElement("script"),
-      t = document.head || document.getElementsByTagName("head")[0];
-    (e.src =
-      "https://cdn.jsdelivr.net/npm/rasa-webchat@1.x.x/lib/index.js"),
-      // Replace 1.x.x with the version that you want
-      (e.async = !0),
-      (e.onload = () => {
-        window.WebChat.default(
-          {
-            customData: { language: "en" },
-            socketUrl: "http://localhost:5055",
-            // add other props here
-          },
-          null
-        );
-      }),
-      t.insertBefore(e, t.firstChild);
-  })();
-  </script>
+<script>
+    !(function () {
+      let e = document.createElement("script"),
+        t = document.head || document.getElementsByTagName("head")[0];
+      (e.src =
+        "https://cdn.jsdelivr.net/npm/rasa-webchat@1.x.x/lib/index.js"),
+        // Replace 1.x.x with the version that you want
+        (e.async = !0),
+        (e.onload = () => {
+          window.WebChat.default(
+            {
+              customData: {
+                language: "en",
+                recipe_id: "{{ this_recipe.id }}"
+              },
+              socketUrl: "http://localhost:5005",
+              // add other props here
+            },
+            null
+          );
+        }),
+        t.insertBefore(e, t.firstChild);
+    })();
+</script>
 
 {% endblock %}
